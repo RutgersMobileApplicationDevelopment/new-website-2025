@@ -2,6 +2,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Welcome to the RUMAD 2025 website! 
 
+- This is a new initiative being spearheaded by the RUMAD Web Team. We are focusing on implementation using three.js and aiming to utilize this platform to host services for the Accelerator and Incubator programs, past projects, and more! 
+
 First, run the development server:
 
 ```bash
