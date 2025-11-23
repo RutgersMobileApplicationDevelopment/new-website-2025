@@ -43,7 +43,7 @@ export default function HomePage() {
           RUMAD
         </h1>
         <p className="text-gray-300 text-xl mt-4 max-w-xl drop-shadow-md">
-          Rutgers Mobile App Development — building student-led software projects.
+          Rutgers Mobile App Development
         </p>
 
         <div className="mt-10 flex gap-6 pointer-events-auto">
