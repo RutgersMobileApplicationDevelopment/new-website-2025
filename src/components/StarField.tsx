@@ -1,0 +1,117 @@
+"use client";
+
+import { useRef, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useScroll } from "@react-three/drei";
+import * as THREE from "three";
+
+const STAR_COUNT = 3000;
+
+export default function StarField() {
+  const pointsRef = useRef<THREE.Points>(null!);
+  const nebulaRef = useRef<THREE.Group>(null!);
+  const scroll = useScroll();
+
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(STAR_COUNT * 3);
+    const colors = new Float32Array(STAR_COUNT * 3);
+    const geo = new THREE.BufferGeometry();
+
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const r = 8 + Math.random() * 90;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = r * Math.cos(phi);
+
+      const t = Math.random();
+      if (t < 0.35) {
+        colors[i * 3] = 0.7 + Math.random() * 0.3;
+        colors[i * 3 + 1] = 0.04 + Math.random() * 0.12;
+        colors[i * 3 + 2] = 0.02 + Math.random() * 0.06;
+      } else if (t < 0.6) {
+        colors[i * 3] = 0.85 + Math.random() * 0.15;
+        colors[i * 3 + 1] = 0.25 + Math.random() * 0.25;
+        colors[i * 3 + 2] = 0.04 + Math.random() * 0.1;
+      } else if (t < 0.82) {
+        colors[i * 3] = 0.9 + Math.random() * 0.1;
+        colors[i * 3 + 1] = 0.78 + Math.random() * 0.15;
+        colors[i * 3 + 2] = 0.65 + Math.random() * 0.2;
+      } else {
+        const v = 0.88 + Math.random() * 0.12;
+        colors[i * 3] = v;
+        colors[i * 3 + 1] = v;
+        colors[i * 3 + 2] = v;
+      }
+    }
+
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    return geo;
+  }, []);
+
+  useFrame((_, delta) => {
+    if (!pointsRef.current) return;
+
+    pointsRef.current.rotation.y += delta * 0.008;
+    pointsRef.current.rotation.x += delta * 0.003;
+
+    const dimTarget = 1 - scroll.range(0.45, 0.15) * 0.65;
+    const mat = pointsRef.current.material as THREE.PointsMaterial;
+    mat.opacity = THREE.MathUtils.lerp(mat.opacity, dimTarget, 0.08);
+
+    if (nebulaRef.current) {
+      nebulaRef.current.rotation.y += delta * 0.003;
+    }
+  });
+
+  return (
+    <>
+      <points ref={pointsRef} geometry={geometry}>
+        <pointsMaterial
+          size={0.18}
+          vertexColors
+          sizeAttenuation
+          transparent
+          opacity={1}
+          depthWrite={false}
+        />
+      </points>
+
+      <group ref={nebulaRef}>
+        <mesh position={[12, 6, -35]}>
+          <sphereGeometry args={[18, 16, 16]} />
+          <meshBasicMaterial
+            color="#2a0505"
+            transparent
+            opacity={0.2}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+        <mesh position={[-14, -8, -40]}>
+          <sphereGeometry args={[22, 16, 16]} />
+          <meshBasicMaterial
+            color="#1a0303"
+            transparent
+            opacity={0.18}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+        <mesh position={[5, -12, -50]}>
+          <sphereGeometry args={[25, 16, 16]} />
+          <meshBasicMaterial
+            color="#200505"
+            transparent
+            opacity={0.15}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
+    </>
+  );
+}
