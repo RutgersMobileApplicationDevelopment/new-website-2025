@@ -69,8 +69,10 @@ export function Starfield() {
     pointsRef.current.rotation.y += delta * 0.008;
     pointsRef.current.rotation.x += delta * 0.003;
 
-    // Dim stars as warp section approaches (scroll 0.45→0.60)
-    const dimTarget = 1 - scroll.range(0.45, 0.15) * 0.65;
+    // Dim stars during warp, then brighten again for icon section
+    const warpDim = scroll.range(0.30, 0.08) * 0.5;
+    const iconBright = scroll.range(0.38, 0.04) * 0.5;
+    const dimTarget = 1 - warpDim + iconBright;
     const mat = pointsRef.current.material as THREE.PointsMaterial;
     mat.opacity = THREE.MathUtils.lerp(mat.opacity, dimTarget, 0.08);
 

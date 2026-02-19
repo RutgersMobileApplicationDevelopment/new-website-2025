@@ -25,7 +25,7 @@ export default function SceneCanvas({ onNavigate }: SceneCanvasProps) {
       >
         <color attach="background" args={['#050505']} />
         <Suspense fallback={null}>
-          <ScrollControls pages={5} damping={0.08}>
+          <ScrollControls pages={7} damping={0.08}>
             <HomeScene onNavigate={onNavigate} />
             <Scroll html style={{ width: '100%' }}>
               <MainContent />

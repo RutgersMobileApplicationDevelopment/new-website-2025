@@ -163,13 +163,13 @@ function Footer() {
 
 export function MainContent() {
   return (
-    <div className="absolute w-full" style={{ top: '260vh' }}>
+    <div className="absolute w-full" style={{ top: '385vh' }}>
       {/* Gradient transition from 3D scene */}
       <div
         className="absolute w-full h-[60vh] pointer-events-none"
         style={{
           top: '-60vh',
-          background: 'linear-gradient(to bottom, transparent 0%, #050505 100%)',
+          background: 'linear-gradient(to bottom, transparent 0%, #050505 80%)',
         }}
       />
 

@@ -84,11 +84,11 @@ export function WarpField() {
   }, []);
 
   useFrame(() => {
-    // Stretch ramps across scroll 0.28→0.46
-    const stretch = scroll.range(0.28, 0.18);
+    // Stretch ramps across scroll (compressed for 7-page scroll)
+    const stretch = scroll.range(0.20, 0.13);
     // Opacity in / out
-    const opIn = scroll.range(0.26, 0.04);
-    const opOut = 1 - scroll.range(0.44, 0.08);
+    const opIn = scroll.range(0.18, 0.03);
+    const opOut = 1 - scroll.range(0.31, 0.06);
     const opacity = Math.min(opIn, opOut);
 
     const posAttr = geometry.attributes.position as THREE.BufferAttribute;

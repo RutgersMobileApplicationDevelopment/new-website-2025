@@ -82,20 +82,20 @@ export function SketchfabPhone({ backColor }: SketchfabPhoneProps) {
     if (!groupRef.current) return;
     const time = performance.now() * 0.001;
 
-    // ── Approach ─────────────────────────────────────────────────────
-    const approach = scroll.range(0, 0.28);
+    // ── Approach (compressed for 7-page scroll) ─────────────────────
+    const approach = scroll.range(0, 0.20);
     const z = THREE.MathUtils.lerp(-14, 1.8, approach);
 
     // ── Flip back → front ────────────────────────────────────────────
-    const flip = scroll.range(0.06, 0.22);
+    const flip = scroll.range(0.04, 0.16);
     const rotY = THREE.MathUtils.lerp(Math.PI, 0, flip);
 
     // ── Scale up ─────────────────────────────────────────────────────
-    const scaleUp = scroll.range(0.02, 0.26);
+    const scaleUp = scroll.range(0.015, 0.185);
     const s = THREE.MathUtils.lerp(0.35, 1, scaleUp);
 
     // ── Exit ─────────────────────────────────────────────────────────
-    const exit = scroll.range(0.28, 0.08);
+    const exit = scroll.range(0.20, 0.06);
     const exitScale = 1 - exit;
 
     // ── Float ────────────────────────────────────────────────────────

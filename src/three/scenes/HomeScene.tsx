@@ -12,11 +12,12 @@ import { applications } from '@/data/applications';
  * Composes every 3D layer. Camera is static at z=5, fov=75.
  * All animation driven by scroll via useScroll() inside each child.
  *
- * Timeline (using sebby-style scroll.range calls inside each object):
- *   0.00–0.28  Phone approaches from z=-14 → z=1.8, flips back→front
- *   0.28–0.36  Phone exits (scales to 0)
- *   0.26–0.52  Warp field fades in, stretches, then fades out
- *   0.52–1.00  Application icons and HTML content
+ * Timeline (7-page scroll):
+ *   0.00–0.20  Phone approaches from z=-14 → z=1.8, flips back→front
+ *   0.20–0.26  Phone exits (scales to 0)
+ *   0.18–0.34  Warp field fades in, stretches, then fades out
+ *   0.25–0.57  3D application icons pop in, float, then fade out
+ *   0.55–1.00  HTML content (Hero, Info, Footer)
  * ──────────────────────────────────────────────────────────────────────────── */
 
 interface HomeSceneProps {
