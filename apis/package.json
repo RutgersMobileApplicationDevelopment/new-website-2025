@@ -1,0 +1,41 @@
+{
+  "name": "rumad-apis-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RUMAD API Platform - Educational API aggregation service",
+  "scripts": {
+    "setup": "npm run setup:infra && npm run setup:api && npm run setup:playground && npm run setup:client",
+    "setup:infra": "cd infra && docker-compose up -d",
+    "setup:api": "cd apps/api && npm install",
+    "setup:playground": "cd apps/playground && npm install",
+    "setup:client": "cd packages/rumad-client && npm install",
+    "dev": "npm-run-all --parallel dev:api dev:playground",
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:playground": "cd apps/playground && npm run dev",
+    "build": "npm run build:api && npm run build:playground && npm run build:client",
+    "build:api": "cd apps/api && npm run build",
+    "build:playground": "cd apps/playground && npm run build",
+    "build:client": "cd packages/rumad-client && npm run build",
+    "start": "npm-run-all --parallel start:api start:playground",
+    "start:api": "cd apps/api && npm start",
+    "start:playground": "cd apps/playground && npm start",
+    "infra:up": "cd infra && docker-compose up -d",
+    "infra:down": "cd infra && docker-compose down",
+    "infra:logs": "cd infra && docker-compose logs -f"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "keywords": [
+    "api",
+    "education",
+    "rumad",
+    "rutgers"
+  ],
+  "author": "RUMAD Team",
+  "license": "MIT"
+}

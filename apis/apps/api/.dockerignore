@@ -1,0 +1,9 @@
+# Dockerignore for API server
+node_modules
+npm-debug.log
+dist
+.env
+.env.local
+.git
+.gitignore
+README.md

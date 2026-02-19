@@ -1,0 +1,576 @@
+openapi: 3.0.3
+info:
+  title: RUMAD APIs
+  version: 1.0.0
+  description: |
+    RUMAD API Platform - Educational API aggregation service for Rutgers Mobile Application Development.
+    
+    This platform provides wrapped/aggregated endpoints for various public APIs with built-in caching, 
+    rate limiting, and educational headers to teach API best practices.
+  contact:
+    name: RUMAD Team
+    url: https://rumad.club
+  license:
+    name: MIT
+
+servers:
+  - url: https://apis.rumad.club/v1
+    description: Production server
+  - url: http://localhost:3001/v1
+    description: Local development server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: x-api-key
+      in: header
+      description: API key for authentication. Contact RUMAD to get your key.
+    
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        data:
+          type: object
+        meta:
+          type: object
+          properties:
+            cached:
+              type: boolean
+            ttl:
+              type: integer
+            source:
+              type: string
+            upstream_latency_ms:
+              type: integer
+      required:
+        - ok
+        - data
+    
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: RATE_LIMITED
+            message:
+              type: string
+              example: Too many requests
+            retry_after_ms:
+              type: integer
+              example: 3000
+            request_id:
+              type: string
+          required:
+            - code
+            - message
+      required:
+        - ok
+        - error
+    
+    Quote:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "Programs must be written for people to read, and only incidentally for machines to execute."
+        author:
+          type: string
+          example: "Harold Abelson & Gerald Jay Sussman"
+      required:
+        - text
+        - author
+
+  parameters:
+    ApiKeyHeader:
+      name: x-api-key
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Your API key
+
+  responses:
+    UnauthorizedError:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    RateLimitError:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: The maximum number of requests allowed per time window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Number of requests remaining in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when the rate limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      security: []
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /quotes:
+    get:
+      summary: Get a random programming quote
+      description: |
+        Returns a random programming quote from a curated collection. 
+        Rate limited to prevent spam (6 second cooldown per user).
+        
+        **Educational headers:**
+        - `X-Cache`: Shows if response came from cache (HIT/MISS)
+        - `X-RateLimit-*`: Shows remaining quota
+      tags:
+        - Content
+      responses:
+        '200':
+          description: Quote retrieved successfully
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+              description: Cache status
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+            X-Request-ID:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          quote:
+                            $ref: '#/components/schemas/Quote'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /weather:
+    get:
+      summary: Get current weather data
+      description: |
+        Returns current weather data from Open-Meteo API. Defaults to New York City.
+        Cached for 30 seconds to reduce upstream calls.
+        
+        **Educational headers:**
+        - `X-Cache`: Shows cache status
+        - `X-Upstream-Latency-ms`: Time taken to fetch from upstream API
+      tags:
+        - Data
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+            example: New York
+          description: City name (currently defaults to NYC)
+        - name: lat
+          in: query
+          schema:
+            type: string
+            example: "40.7128"
+          description: Latitude
+        - name: lon
+          in: query
+          schema:
+            type: string
+            example: "-74.0060"
+          description: Longitude
+      responses:
+        '200':
+          description: Weather data retrieved successfully
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+            X-Upstream-Latency-ms:
+              schema:
+                type: integer
+              description: Milliseconds taken to fetch from upstream
+            X-Request-ID:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /crypto/prices:
+    get:
+      summary: Get cryptocurrency prices
+      description: |
+        Returns current prices for specified cryptocurrencies from CoinGecko.
+        Supports up to 10 tickers per request. Cached for 30 seconds.
+        
+        **Supported tickers:** BTC, ETH, SOL, ADA, DOT, MATIC, AVAX, LINK, UNI, ATOM
+      tags:
+        - Data
+      parameters:
+        - name: tickers
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "BTC,ETH,SOL"
+          description: Comma-separated list of ticker symbols (max 10)
+      responses:
+        '200':
+          description: Crypto prices retrieved successfully
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+            X-Upstream-Latency-ms:
+              schema:
+                type: integer
+            X-Request-ID:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          prices:
+                            type: object
+                            additionalProperties:
+                              type: object
+                              properties:
+                                price:
+                                  type: number
+                                change_24h:
+                                  type: number
+                          currency:
+                            type: string
+                            example: USD
+        '400':
+          description: Invalid tickers parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /news:
+    get:
+      summary: Get latest news articles
+      description: |
+        Returns news articles from NewsAPI. Supports pagination and topic filtering.
+        Cached for 5 minutes. Requires NEWSAPI_KEY environment variable.
+      tags:
+        - Content
+      parameters:
+        - name: topic
+          in: query
+          schema:
+            type: string
+            default: technology
+            example: technology
+          description: News topic to search for
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of articles per page
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: News articles retrieved successfully
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+            X-Upstream-Latency-ms:
+              schema:
+                type: integer
+            X-Request-ID:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /dashboard:
+    get:
+      summary: Get aggregated dashboard data
+      description: |
+        Returns combined data from weather, crypto, and quotes endpoints in a single request.
+        Demonstrates parallel API calls and partial failure handling.
+        
+        If any upstream fails, returns `partial: true` in meta with errors array.
+      tags:
+        - Aggregation
+      responses:
+        '200':
+          description: Dashboard data retrieved (may be partial)
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+            X-Upstream-Latency-ms:
+              schema:
+                type: integer
+              description: Total time for all parallel requests
+            X-Request-ID:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          weather:
+                            type: object
+                          crypto:
+                            type: object
+                          quote:
+                            $ref: '#/components/schemas/Quote'
+                      meta:
+                        type: object
+                        properties:
+                          partial:
+                            type: boolean
+                            description: True if any upstream API failed
+                          errors:
+                            type: array
+                            items:
+                              type: string
+                            description: List of failed sources
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /validate/email:
+    post:
+      summary: Validate email address format
+      description: |
+        Validates email format using Zod schema validation.
+        Demonstrates 422 validation errors.
+      tags:
+        - Utilities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+              required:
+                - email
+      responses:
+        '200':
+          description: Email is valid
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          valid:
+                            type: boolean
+                          email:
+                            type: string
+                          suggestion:
+                            type: string
+                            nullable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          details:
+                            type: array
+                            items:
+                              type: object
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /auth/token:
+    post:
+      summary: Exchange API key for JWT token
+      description: |
+        Exchanges an API key for a JWT Bearer token.
+        Currently returns a mock token for demonstration.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiKey:
+                  type: string
+                  example: demo_key_12345
+              required:
+                - apiKey
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          type:
+                            type: string
+                            example: Bearer
+                          expires_in:
+                            type: integer
+                            example: 3600
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Content
+    description: Content aggregation endpoints
+  - name: Data
+    description: Real-time data endpoints
+  - name: Aggregation
+    description: Combined multi-source endpoints
+  - name: Utilities
+    description: Utility and validation endpoints
+  - name: Authentication
+    description: Authentication and authorization
