@@ -3,6 +3,7 @@
 import { Starfield } from '../objects/Starfield';
 import { WarpField } from '../objects/WarpField';
 import { SketchfabPhone } from '../objects/SketchfabPhone';
+import { IconAmbientStage } from '../objects/IconAmbientStage';
 import { ApplicationIcons } from '../objects/ApplicationIcons';
 import { applications } from '@/data/applications';
 
@@ -32,10 +33,12 @@ export function HomeScene({ onNavigate }: HomeSceneProps) {
       <directionalLight position={[5, 5, 5]} intensity={1} />
       <directionalLight position={[-3, 2, -5]} intensity={0.3} color="#ff4444" />
       <pointLight position={[0, 0, 3]} intensity={0.4} color="#ff6666" />
+      <pointLight position={[0, 1.8, 0.5]} intensity={0.55} color="#ff8a5f" />
 
       {/* Background layers */}
       <Starfield />
       <WarpField />
+      <IconAmbientStage />
 
       {/* Interactive foreground */}
       <SketchfabPhone />
