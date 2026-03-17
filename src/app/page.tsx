@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { NavBar } from '@/components/NavBar';
+import { Footer } from '@/components/Footer';
 import { ScrollHint } from '@/components/ScrollHint';
 import { MobileFallback } from '@/components/MobileFallback';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -17,12 +17,7 @@ const SceneCanvas = dynamic(() => import('@/components/SceneCanvas'), {
 });
 
 export default function HomePage() {
-  const router = useRouter();
   const isMobile = useIsMobile();
-
-  const handleNavigate = (route: string) => {
-    router.push(route);
-  };
 
   return (
     <main className="relative w-full h-screen overflow-hidden bg-[#050505]">
@@ -31,10 +26,11 @@ export default function HomePage() {
         <MobileFallback />
       ) : (
         <>
-          <SceneCanvas onNavigate={handleNavigate} />
+          <SceneCanvas />
           <ScrollHint />
         </>
       )}
+      <Footer />
     </main>
   );
 }

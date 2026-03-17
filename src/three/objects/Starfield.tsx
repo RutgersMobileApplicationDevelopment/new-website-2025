@@ -10,7 +10,7 @@ const STAR_COUNT = 3000;
 /**
  * Rich warm-toned starfield with vertex colours (red / orange / gold / white)
  * plus soft additive-blend nebula clouds. Adapted from Sebby's branch.
- * Stars dim slightly as the warp-speed section approaches.
+ * Brightness subtly breathes with the constellation/phone handoff phase.
  */
 export function Starfield() {
   const pointsRef = useRef<THREE.Points>(null);
@@ -69,10 +69,10 @@ export function Starfield() {
     pointsRef.current.rotation.y += delta * 0.008;
     pointsRef.current.rotation.x += delta * 0.003;
 
-    // Dim stars during warp, then brighten again for icon section
-    const warpDim = scroll.range(0.30, 0.08) * 0.5;
-    const iconBright = scroll.range(0.38, 0.04) * 0.5;
-    const dimTarget = 1 - warpDim + iconBright;
+    // Slight dim when constellations trace, then brighten for icon reveal
+    const constellationsDim = scroll.range(0.14, 0.12) * 0.35;
+    const iconBright = scroll.range(0.33, 0.08) * 0.4;
+    const dimTarget = 1 - constellationsDim + iconBright;
     const mat = pointsRef.current.material as THREE.PointsMaterial;
     mat.opacity = THREE.MathUtils.lerp(mat.opacity, dimTarget, 0.08);
 

@@ -24,7 +24,7 @@ export function ScrollHint() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 animate-pulse pointer-events-none">
+    <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 animate-pulse pointer-events-none">
       <span className="text-xs text-gray-400 uppercase tracking-widest">
         Scroll to explore
       </span>

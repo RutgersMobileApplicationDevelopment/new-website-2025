@@ -22,9 +22,9 @@ import { EventsIcon } from './icons/EventsIcon';
  * Extended scroll range so users can linger with the icons.
  *
  * Timeline (7-page scroll):
- *   0.25–0.37  Icons pop in with staggered easeOutBack
- *   0.25–0.52  Icons float and are interactable
- *   0.52–0.57  Icons fade out before HTML content
+ *   0.33–0.45  Icons pop in after phone fullscreen handoff
+ *   0.33–0.66  Icons float and are interactable
+ *   0.66–0.73  Icons fade out before HTML content
  * ──────────────────────────────────────────────────────────────────────────── */
 
 /** Map of program id → rendered 3D icon component. */
@@ -79,13 +79,13 @@ function AppIcon({ app, index, total, onNavigate }: AppIconProps) {
     if (!groupRef.current) return;
     const time = performance.now() * 0.001;
 
-    // ── Pop-in: scroll 0.25–0.37, staggered per icon ──
-    const raw = scroll.range(0.25, 0.12);
+    // ── Pop-in: starts after phone handoff ──
+    const raw = scroll.range(0.33, 0.12);
     const delayed = clamp((raw - staggerDelay * 0.5) / 0.7, 0, 1);
     const popIn = easeOutBack(delayed);
 
-    // ── Fade-out: scroll 0.52–0.06 ──
-    const fadeOut = 1 - scroll.range(0.52, 0.06);
+    // ── Fade-out before HTML content ──
+    const fadeOut = 1 - scroll.range(0.66, 0.07);
 
     const vis = popIn * fadeOut;
 
@@ -99,9 +99,8 @@ function AppIcon({ app, index, total, onNavigate }: AppIconProps) {
     groupRef.current.scale.setScalar(vis * hoverScale);
     groupRef.current.visible = vis > 0.01;
 
-    // Gentle continuous rotation (slow tumble)
-    groupRef.current.rotation.y = Math.sin(time * 0.3 + index * 2) * 0.15;
-    groupRef.current.rotation.x = Math.sin(time * 0.25 + index * 1.3) * 0.08;
+    // No tilt while floating; keep icons facing user directly
+    groupRef.current.rotation.set(0, 0, 0);
   });
 
   const handlePointerOver = useCallback(() => {

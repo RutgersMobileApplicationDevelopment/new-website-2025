@@ -66,14 +66,32 @@ src/
 │   ├── pastwork/page.tsx         # Past work page
 │   ├── programs/page.tsx         # Programs page
 │   ├── team/page.tsx             # Team page
+│   ├── webteam/page.tsx          # Web Team page
+│   ├── events/page.tsx           # Events page
 │   └── api/                      # API routes (aggregate, auth, rate-limit)
 │
 ├── components/                   # React UI components
-│   ├── SceneCanvas.tsx           # R3F Canvas + ScrollControls wrapper
-│   ├── MainContent.tsx           # HTML content layer (Hero, Info, Footer)
-│   ├── NavBar.tsx                # Fixed top nav with RUMAD logo
+│   ├── SceneCanvas.tsx           # R3F Canvas + ScrollControls + PhoneScreenOverlay
+│   ├── NavBar.tsx                # Fixed top nav with horizontal RUMAD logo
+│   ├── Footer.tsx                # Fixed bottom bar (copyright + contact)
 │   ├── MobileFallback.tsx        # Fallback UI for mobile devices
 │   ├── ScrollHint.tsx            # Animated scroll-down indicator
+│   ├── constellations/           # Constellation config & registry
+│   │   ├── constellation-config.json  # Global settings + warm colour palette
+│   │   ├── landingConfig.ts      # Parsed config for the landing page
+│   │   ├── registry.ts           # Motif registry (normalises JSON → typed motifs)
+│   │   ├── types.ts              # TypeScript interfaces
+│   │   ├── index.ts              # Barrel export
+│   │   └── motifs/               # Per-SVG motif configs
+│   │       ├── phone-logo.json   # Vertical RUMAD logo
+│   │       ├── horizontal-logo.json  # Horizontal RUMAD logo
+│   │       └── mask-satellite.json   # Mask satellite
+│   ├── phone-screen/             # Phone screen DOM overlay system
+│   │   ├── phoneScreenBridge.ts  # R3F→DOM mutable state bridge
+│   │   ├── PhoneScreenOverlay.tsx  # Pixel-accurate positioned wrapper
+│   │   ├── PhoneScreenSplash.tsx # Phase 1: logo + title + socials
+│   │   ├── PhoneScreenInfo.tsx   # Phase 2: info + program cards
+│   │   └── index.ts              # Barrel export
 │   └── incubator/               # Incubator page components (modular)
 │       ├── index.ts              # Barrel export
 │       ├── IncubatorHero.tsx     # Full-viewport hero with animated tagline
@@ -87,12 +105,22 @@ src/
 │   ├── models/
 │   │   └── useGLBModel.ts        # Reusable GLB loader with material overrides
 │   ├── objects/
-│   │   ├── SketchfabPhone.tsx    # Sketchfab iPhone 17 Pro GLB w/ warm colours
-│   │   ├── PhoneModel.tsx        # Legacy procedural phone (kept for reference)
+│   │   ├── SketchfabPhone.tsx    # iPhone GLB + 3D→2D projection + colour cycling
 │   │   ├── Starfield.tsx         # Warm vertex-colored star particles
 │   │   ├── WarpField.tsx         # Warp-speed streak effect
 │   │   ├── ApplicationIcons.tsx  # Data-driven program icons
-│   │   └── NebulaBackground.tsx  # Procedural FBM nebula (reserved)
+│   │   └── constellation/        # Modular constellation rendering system
+│   │       ├── ConstellationLayer.tsx  # Top-level orchestrator
+│   │       ├── MotifInstanceVisual.tsx # Single constellation + ghost tiles
+│   │       ├── MovingStars.tsx    # Variable-depth drifting starfield
+│   │       ├── NebulaClouds.tsx   # Additive-blend nebula spheres
+│   │       ├── placement.ts       # Collision-aware instance generation
+│   │       ├── schedule.ts        # "2-6-2" visibility queue
+│   │       ├── shaders.ts         # GLSL trace shaders
+│   │       ├── svg-guide.ts       # SVG contour extraction
+│   │       ├── utils.ts           # Pure utility functions
+│   │       ├── types.ts           # TypeScript interfaces
+│   │       └── index.ts           # Barrel export
 │   ├── scenes/
 │   │   └── HomeScene.tsx         # Scene composition layer
 │   ├── types/
@@ -105,11 +133,19 @@ src/
 │   └── incubatorCurriculum.ts    # Incubator programme data (timeline, roles, FAQs)
 │
 └── hooks/
-    └── useIsMobile.ts            # Viewport-width detection hook
+    ├── useIsMobile.ts            # Viewport-width detection hook
+    ├── usePhoneScreen.ts         # Phone screen bridge subscriber hook
+    └── useWheelForward.ts        # Wheel-event forwarding hook for overlays
 
 public/
-└── models/
-    └── iphone-17-pro.glb         # Sketchfab iPhone 17 Pro model (~2.3 MB)
+├── models/
+│   └── iphone-17-pro.glb         # Sketchfab iPhone 17 Pro model (~2.3 MB)
+├── constellations/               # SVG motifs for constellation outlines
+│   ├── phone-logo.svg            # Vertical RUMAD logo
+│   ├── horizontal-logo.svg       # Horizontal RUMAD logo
+│   └── mask-satellite.svg        # Mask satellite
+├── vertical-logo.png             # RUMAD vertical logo (for phone splash)
+└── horizontal-logo.png           # RUMAD horizontal logo (for navbar)
 ```
 
 ---
@@ -118,43 +154,59 @@ public/
 
 ### Scroll-Driven 3D Scene
 
-The homepage uses **drei `ScrollControls`** (5 virtual pages, 0.08 damping) to drive every animation. The scroll timeline (`scroll.range(start, delta)`) controls:
+The homepage uses **drei `ScrollControls`** (6 virtual pages, 0.04 damping) to drive every animation. The scroll timeline (`scroll.range(start, delta)`) controls:
 
-1. **Phone approach** (0 → 0.28) — iPhone flies in from z = −14 to z = 1.8
-2. **Phone flip** (0.06 → 0.22) — Back-to-front rotation revealing the screen
-3. **Warp streaks** (0.28 → 0.18) — Warm-colored speed lines stretch outward
-4. **Application icons** (0.36 → 0.52) — Program icons pop in with easeOutBack stagger
-5. **HTML content** (260 vh+) — Hero section, info, and footer fade in
+1. **Constellation field** (always) — SVG-outlined constellations drift left-to-right with scroll-boosted speed, pacman-wrapping at screen edges
+2. **Phone approach** (0 → 0.16) — iPhone flies in from z = −14 to z = 1.55
+3. **Phone flip & settle** (0.04 → 0.5) — Back-to-front rotation, landscape tilt, zoom to fill screen
+4. **Phone content Phase 1** (0.52 → 0.72) — RUMAD splash (logo + title + socials) fades in on the phone screen
+5. **Phone content Phase 2** (0.80 → 0.98) — Info page with program cards scrolls into view on the phone screen
 
 ### Rendering Pipeline
 
 ```
 page.tsx
-  └─ SceneCanvas.tsx            (R3F <Canvas> + <ScrollControls>)
-       ├─ <Scroll>              (3D objects)
-       │    └─ HomeScene.tsx
-       │         ├─ Starfield
-       │         ├─ WarpField
-       │         ├─ SketchfabPhone  ← Sketchfab GLB model
-       │         └─ ApplicationIcons
-       └─ <Scroll html>         (HTML overlay)
-            └─ MainContent.tsx
-                 ├─ HeroSection
-                 ├─ InfoSection
-                 └─ Footer
+  ├─ NavBar                     (fixed top nav, wheel-forwarded)
+  ├─ SceneCanvas.tsx            (R3F <Canvas> + <ScrollControls>)
+  │    ├─ HomeScene.tsx
+  │    │    ├─ ConstellationLayer
+  │    │    │    ├─ NebulaClouds
+  │    │    │    ├─ MovingStars
+  │    │    │    └─ MotifInstanceVisual ×N
+  │    │    └─ SketchfabPhone   → writes to phoneScreenBridge
+  │    └─ PhoneScreenOverlay    (DOM sibling, reads bridge via rAF)
+  │         ├─ PhoneScreenSplash  (Phase 1)
+  │         └─ PhoneScreenInfo    (Phase 2)
+  └─ Footer                     (fixed bottom bar, wheel-forwarded)
 ```
+
+### Constellation System
+
+The constellation rendering is a fully modular, data-driven system:
+
+- **Config-driven** — All behaviour (motif weights, visibility timing, placement spacing, colours) is defined in `constellation-config.json` and per-motif JSON files. No magic numbers in code.
+- **Global warm palette** — A single `colors` array of bright reds, oranges, and golds ensures every constellation pops against the dark background.
+- **"2-6-2" visibility cycle** — Each constellation fades in (2s), holds (6s), fades out (2s) on a staggered round-robin schedule.
+- **Pacman wrapping** — Toroidal wrapping with up to 9 ghost tiles per instance for seamless edge transitions.
+- **Flash regeneration** — After each cycle, all constellations flash out, regenerate with a new deterministic seed, and flash back in.
+- **Scroll-boosted drift** — Scrolling speeds up the base left-to-right drift with a smoothed velocity multiplier.
+
+### Phone Screen Content (DOM Overlay)
+
+The phone screen content is rendered as plain HTML/CSS positioned precisely over the 3D phone model:
+
+- **3D→2D projection** — `SketchfabPhone` projects the Display mesh's bounding box corners through the camera to get exact pixel coordinates each frame.
+- **Bridge pattern** — A module-level mutable object (`phoneScreenBridge`) carries visibility, phase, and pixel bounds from R3F to DOM without React re-renders.
+- **rAF-driven** — The overlay reads bridge state via `requestAnimationFrame`, directly manipulating DOM styles for 60fps positioning.
+- **Container queries** — Content uses CSS `cqw` units, scaling responsively with the phone's dynamic screen size.
 
 ### Sketchfab Phone Model
 
 The `SketchfabPhone` loads a Sketchfab-sourced iPhone 17 Pro GLB (`public/models/iphone-17-pro.glb`) via the reusable `useGLBModel` hook.
 
-**Warm colour randomisation**: On each mount a random colour is picked from the warm palette and applied to:
-- `Frosted glass` — body back (main colour)
-- `Tint back glass` — camera area (slightly darker)
-- `Frame` — side frame (lighter, high metalness)
-- `Aluminum` — metal accents (lightest, mirror-like)
+**Colour cycling**: The phone body continuously cycles through dark warm theme colours over a 24-second period using HSL interpolation. Glass materials are semi-transparent (0.65–0.7 opacity) for a frosted look. The Display material is set to a flat dark surface.
 
-The model has 18 meshes and 15 named materials. Other materials (Glass, Lens, Display, etc.) are left at their Sketchfab defaults.
+The model has 18 meshes and 15 named materials. `SketchfabPhone` also handles 3D-to-2D pixel projection of the screen corners, writing bounds to `phoneScreenBridge` for the DOM overlay.
 
 ### Reusable GLB Loader
 
@@ -223,6 +275,8 @@ Defined in `globals.css`:
 | `/` | 3D cinematic homepage |
 | `/accelerator` | Accelerator program |
 | `/incubator` | Incubator program (full curriculum) |
+| `/webteam` | Web Team |
+| `/events` | Events |
 | `/eboard` | E-Board |
 | `/contact` | Contact |
 | `/pastwork` | Past work showcase |

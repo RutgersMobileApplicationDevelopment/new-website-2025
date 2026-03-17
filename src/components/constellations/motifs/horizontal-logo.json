@@ -1,0 +1,23 @@
+{
+  "id": "rumad-horizontal",
+  "name": "RUMAD Horizontal",
+  "svgPath": "/constellations/horizontal-logo.svg",
+  "outline": {
+    "thickness": 7.0,
+    "opacity": 1.0,
+    "brightness": 2.4
+  },
+  "size": {
+    "multiplier": 1.4,
+    "min": 1.1,
+    "max": 4.8
+  },
+  "tilt": {
+    "max": 0.12
+  },
+  "points": {
+    "count": 8,
+    "jitter": 0.004,
+    "sizeMultiplier": 1.35
+  }
+}

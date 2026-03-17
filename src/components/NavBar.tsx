@@ -1,48 +1,42 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
+import { useWheelForward } from '@/hooks/useWheelForward';
 
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Accelerator', href: '/accelerator' },
   { label: 'Incubator', href: '/incubator' },
+  { label: 'Web Team', href: '/webteam' },
+  { label: 'Events', href: '/events' },
   { label: 'E-Board', href: '/eboard' },
 ];
-
-/** RUMAD pixel-art logo (eyes + mouth). */
-function RumadLogo({ size = 38 }: { size?: number }) {
-  const eyeW = size * 0.2;
-  const eyeH = size * 0.14;
-  const gap = size * 0.08;
-  const mouthW = size * 0.38;
-  const mouthH = size * 0.06;
-
-  return (
-    <div
-      className="bg-[#cc1111] rounded-lg flex items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <div className="flex flex-col items-center" style={{ gap: gap * 0.5 }}>
-        <div className="flex" style={{ gap }}>
-          <div className="bg-white rounded-[1px]" style={{ width: eyeW, height: eyeH }} />
-          <div className="bg-white rounded-[1px]" style={{ width: eyeW, height: eyeH }} />
-        </div>
-        <div className="bg-white rounded-[1px]" style={{ width: mouthW, height: mouthH }} />
-      </div>
-    </div>
-  );
-}
 
 /**
  * Fixed top navigation overlay.
  * Translucent blurred backdrop keeps it readable over the 3D canvas.
  */
 export function NavBar() {
+  const navRef = useRef<HTMLElement>(null);
+  useWheelForward(navRef);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-4 bg-[#050505]/70 backdrop-blur-lg border-b border-white/[0.06]">
+    <nav
+      ref={navRef}
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-3 bg-[#050505]/70 backdrop-blur-lg border-b border-white/[0.06]"
+    >
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2">
-        <RumadLogo size={38} />
+      <Link href="/" className="flex items-center">
+        <img
+          src="/horizontal-logo.png"
+          alt="RUMAD"
+          className="h-8 w-auto"
+          style={{
+            filter:
+              'brightness(0) invert(28%) sepia(90%) saturate(2000%) hue-rotate(345deg) brightness(90%)',
+          }}
+        />
       </Link>
 
       {/* Desktop links */}

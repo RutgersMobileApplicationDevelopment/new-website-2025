@@ -1,0 +1,23 @@
+{
+  "id": "mask-satellite",
+  "name": "Mask Satellite",
+  "svgPath": "/constellations/mask-satellite.svg",
+  "outline": {
+    "thickness": 1.2,
+    "opacity": 0.7,
+    "brightness": 1.0
+  },
+  "size": {
+    "multiplier": 1.15,
+    "min": 0.9,
+    "max": 3.6
+  },
+  "tilt": {
+    "max": 0.2
+  },
+  "points": {
+    "count": 8,
+    "jitter": 0.006,
+    "sizeMultiplier": 1.2
+  }
+}

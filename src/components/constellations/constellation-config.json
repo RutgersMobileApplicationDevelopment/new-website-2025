@@ -1,0 +1,56 @@
+{
+  "colors": [
+    "#ff5544", "#ff7733", "#ee4422", "#ff9955",
+    "#ffbb66", "#ffcc88", "#ff6644", "#ffaa55",
+    "#ee6633", "#ffdd99"
+  ],
+  "motifs": {
+    "total": 7,
+    "weights": {
+      "rumad-logo": 1,
+      "rumad-horizontal": 1,
+      "mask-satellite": 1
+    }
+  },
+  "visibility": {
+    "aggressiveness": 0.7,
+    "range": {
+      "min": 2,
+      "max": 4
+    }
+  },
+  "placement": {
+    "minDistance": 1.9,
+    "attempts": 220
+  },
+  "size": {
+    "average": 4.25,
+    "jitter": 0.14
+  },
+  "timing": {
+    "cycleSeconds": 60,
+    "outline": {
+      "fadeInSeconds": 2,
+      "holdSeconds": 6,
+      "fadeOutSeconds": 2
+    },
+    "regeneration": {
+      "jitter": 4,
+      "flashOut": 0.75,
+      "hidden": 2.6,
+      "hiddenJitter": 1.2,
+      "flashIn": 0.9,
+      "flashInJitter": 0.45
+    }
+  },
+  "outline": {
+    "thicknessBoost": 1.22,
+    "minThickness": 5.4
+  },
+  "points": {
+    "size": 2.75,
+    "opacity": 0.76,
+    "twinkle": 0.2,
+    "twinkleSpeed": 0.006
+  }
+}
