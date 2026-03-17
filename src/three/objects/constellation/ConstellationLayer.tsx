@@ -45,10 +45,10 @@ import { MovingStars } from './MovingStars';
  * (≈0.001–0.01 while actively scrolling).  A large factor is needed
  * to produce a visible speed-up.
  */
-const SCROLL_BOOST_FACTOR = 600;
+const SCROLL_BOOST_FACTOR = 2400;
 
 /** Exponential smoothing factor for scroll velocity (0–1; lower = smoother). */
-const SCROLL_SMOOTH = 0.12;
+const SCROLL_SMOOTH = 0.15;
 
 export function ConstellationLayer() {
   const { camera, viewport, size } = useThree();
@@ -200,7 +200,7 @@ export function ConstellationLayer() {
     smoothedVelocityRef.current += (rawVelocity - smoothedVelocityRef.current) * SCROLL_SMOOTH;
 
     // Clamp the boost so it doesn't go insane
-    scrollBoostRef.current = 1 + Math.min(smoothedVelocityRef.current * SCROLL_BOOST_FACTOR, 8);
+    scrollBoostRef.current = 1 + Math.min(smoothedVelocityRef.current * SCROLL_BOOST_FACTOR, 18);
 
     // Flash visibility
     if (!nebulaRootRef.current) return;
