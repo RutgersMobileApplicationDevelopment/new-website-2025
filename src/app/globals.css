@@ -5,6 +5,15 @@
   --foreground: #ededed;
   --color-accent: #cc1111;
   --color-accent-light: #ee2222;
+
+  /* shadcn-compatible tokens (dark theme) */
+  --card: #0d0d0d;
+  --card-foreground: #ededed;
+  --muted: #1a1a1a;
+  --muted-foreground: rgba(255, 255, 255, 0.4);
+  --border: rgba(255, 255, 255, 0.08);
+  --primary: #cc1111;
+  --primary-foreground: #fff;
 }
 
 @theme inline {
@@ -17,6 +26,15 @@
   --font-body: var(--font-outfit);
   --font-sans: var(--font-outfit);
   --font-mono: var(--font-outfit);
+
+  /* shadcn token mapping for Tailwind utilities */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 }
 
 * {
@@ -96,4 +114,225 @@ canvas {
 
 .phone-screen-line.short {
   width: 40%;
+}
+
+/* ─── UI Components ──────────────────────────────────────────────────────── */
+
+/* Shared input base */
+.ui-input,
+.ui-textarea,
+.ui-select {
+  width: 100%;
+  background: #0d0d0d;
+  color: var(--foreground);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-size: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.ui-input:hover,
+.ui-textarea:hover,
+.ui-select:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.ui-input:focus,
+.ui-textarea:focus,
+.ui-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(204, 17, 17, 0.15);
+}
+
+.ui-input:disabled,
+.ui-textarea:disabled,
+.ui-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Textarea */
+.ui-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+/* Select / Dropdown */
+.ui-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.ui-select option {
+  background: #111;
+  color: var(--foreground);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, opacity 0.2s ease;
+  outline: none;
+  text-decoration: none;
+}
+
+.ui-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Primary — red fill */
+.ui-btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.ui-btn-primary:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  box-shadow: 0 0 16px rgba(204, 17, 17, 0.4);
+}
+
+.ui-btn-primary:active {
+  background: #aa0e0e;
+  box-shadow: none;
+}
+
+/* Secondary — dark fill, white border */
+.ui-btn-secondary {
+  background: #111;
+  color: var(--foreground);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.ui-btn-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: #181818;
+}
+
+.ui-btn-secondary:active {
+  background: #0d0d0d;
+}
+
+/* Ghost — transparent */
+.ui-btn-ghost {
+  background: transparent;
+  color: var(--foreground);
+  border-color: transparent;
+}
+
+.ui-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Destructive */
+.ui-btn-destructive {
+  background: transparent;
+  color: var(--color-accent-light);
+  border-color: rgba(204, 17, 17, 0.3);
+}
+
+.ui-btn-destructive:hover {
+  background: rgba(204, 17, 17, 0.1);
+  border-color: var(--color-accent);
+}
+
+/* ─── Table ───────────────────────────────────────────────────────────────── */
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.ui-table thead tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ui-table th {
+  text-align: left;
+  padding: 0.625rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ui-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ui-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ui-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Striped variant */
+.ui-table-striped tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Bordered variant */
+.ui-table-bordered {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ui-table-bordered th,
+.ui-table-bordered td {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes star-btn {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+@theme inline {
+  --animate-star-btn: star-btn calc(var(--duration, 3) * 1s) linear infinite;
 }
